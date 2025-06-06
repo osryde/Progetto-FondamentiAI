@@ -12,7 +12,7 @@ In poche parole durante l'addestramento, il **dropout** disattiva in modo casual
 - Durante il test (inference, cioè fase di test su dati nuovi), tutti i neuroni sono attivi, ma i pesi vengono scalati per compensare.
 
 >Durante il training, il dropout aumenta l’output dei neuroni attivi moltiplicandolo per 1 / (1 - p) per mantenere costante l’output medio.
-Durante il test (inference), tutti i neuroni sono attivi e non serve alcuna modifica. Parliamo dunque di **inverted dropout**.
+Durante il test (inference), tutti i neuroni sono attivi e non serve alcuna modifica. Parliamo dunque di [**inverted dropout**](https://towardsdatascience.com/dropout-in-neural-networks-47a162d621d9/).
 
 Quindi durante la fase di dropout avremo un incremento del valore dei neuroni attivi, in modo da rendere l'output medio delle ue fasi (training e test) pressochè simili.
 
