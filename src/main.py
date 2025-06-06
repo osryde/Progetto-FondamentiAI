@@ -20,8 +20,8 @@ def main():
     batch_size = 64
     learning_rate = 0.001
     epochs = 10
-    hidden_sizes = [128]       # Due strati nascosti
-    dropout_prob = 0.5            # Dropout al 20%
+    hidden_sizes = [512,512,256,128]       # Strati nascosti
+    dropout_prob = 0.4           # Dropout 
 
     # Carica i dati
     train_loader, test_loader = get_loaders(batch_size=batch_size)

@@ -13,6 +13,8 @@ class MLPFlexible(nn.Module):
     def __init__(self, input_size=784, hidden_sizes=[128], num_classes=10, dropout_prob=0.0):
         super().__init__()
         
+        # TODO: Applicare droput anche sull'input layer?
+        
         layers = []
         in_size = input_size
         
