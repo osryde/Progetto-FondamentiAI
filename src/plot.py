@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import matplotlib.ticker as mticker
 from tqdm import tqdm
 
 # Importa le funzioni e le classi necessarie dai file del progetto
@@ -78,49 +79,85 @@ def run_experiments(config):
 def plot_learning_curves(df, config):
     """
     Genera e salva i grafici delle curve di apprendimento (accuratezza e loss)
-    confrontando i modelli con e senza dropout.
+    confrontando i modelli. Le linee sono smussate con una media mobile per
+    una migliore visualizzazione del trend.
     """
-    print("Generazione grafici delle curve di apprendimento...")
-    # Confrontiamo il modello senza dropout (0.0) con un modello con dropout (es. 0.4)
+    print("Generazione grafici delle curve di apprendimento (solo linee smussate)...")
     dropout_to_compare = 0.4 
-    
+    markers = {"Training": "s", "Test": "o"}
+    palette = "colorblind"
+    window_size = 3
+
     for model_name in config['architectures'].keys():
-        # Filtra i dati per il modello corrente e per i valori di dropout scelti
-        df_plot = df[
+        # Filtra i dati per il modello corrente
+        df_model = df[
             (df['model_name'] == model_name) &
             (df['dropout_prob'].isin([0.0, dropout_to_compare]))
-        ]
+        ].copy()
+
+        # Calcola la media mobile per ogni metrica
+        metrics = ['train_acc', 'test_acc', 'train_loss', 'test_loss']
+        for metric in metrics:
+            df_model[f'{metric}_smooth'] = df_model.groupby('dropout_prob')[metric].transform(
+                lambda x: x.rolling(window=window_size, min_periods=1).mean()
+            )
+            
+        # Ristruttura il DataFrame usando solo i dati smussati
+        # Melt per l'accuratezza
+        df_acc = df_model.melt(
+            id_vars=['epoch', 'dropout_prob'], 
+            value_vars=['train_acc_smooth', 'test_acc_smooth'], # Solo dati smooth
+            var_name='Metric', 
+            value_name='Accuratezza'
+        )
+        df_acc['Set'] = df_acc['Metric'].replace({'train_acc_smooth': 'Training', 'test_acc_smooth': 'Test'})
+
+        # Melt per la loss
+        df_loss = df_model.melt(
+            id_vars=['epoch', 'dropout_prob'], 
+            value_vars=['train_loss_smooth', 'test_loss_smooth'], # Solo dati smooth
+            var_name='Metric', 
+            value_name='Loss'
+        )
+        df_loss['Set'] = df_loss['Metric'].replace({'train_loss_smooth': 'Training', 'test_loss_smooth': 'Test'})
         
-        # Crea una figura con due subplot (uno per l'accuratezza, uno per la loss)
-        fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+        # Crea la figura con i subplot
+        fig, axes = plt.subplots(1, 2, figsize=(18, 7))
         fig.suptitle(f'Curve di Apprendimento - {model_name}', fontsize=16)
 
-        # Plot per l'Accuratezza
-        sns.lineplot(data=df_plot, x='epoch', y='train_acc', hue='dropout_prob', style='dropout_prob', ax=axes[0], palette='viridis', legend=False, dashes=[(1,0), (2,2)])
-        sns.lineplot(data=df_plot, x='epoch', y='test_acc', hue='dropout_prob', style='dropout_prob', ax=axes[0], palette='viridis')
+        # --- Plot per l'Accuratezza (solo linee smussate) ---
+        sns.lineplot(
+            data=df_acc, 
+            x='epoch', y='Accuratezza', 
+            hue='dropout_prob', style='Set', 
+            markers=markers, palette=palette, ax=axes[0], linewidth=2.5
+        )
         axes[0].set_title('Accuratezza vs. Epoche')
         axes[0].set_xlabel('Epoca')
         axes[0].set_ylabel('Accuratezza')
-        axes[0].grid(True)
-        # Crea legenda manualmente per chiarezza
-        handles, _ = axes[0].get_legend_handles_labels()
-        axes[0].legend(handles, [f'Test (dropout={p})' for p in [0.0, dropout_to_compare]] + [f'Train (dropout={p})' for p in [0.0, dropout_to_compare]], title='Dropout')
+        axes[0].grid(True, which='both', linestyle='--')
+        axes[0].xaxis.set_major_locator(mticker.MultipleLocator(1))
+        axes[0].legend(title='Dropout / Set')
 
-
-        # Plot per la Loss
-        sns.lineplot(data=df_plot, x='epoch', y='train_loss', hue='dropout_prob', style='dropout_prob', ax=axes[1], palette='viridis', legend=False, dashes=[(1,0), (2,2)])
-        sns.lineplot(data=df_plot, x='epoch', y='test_loss', hue='dropout_prob', style='dropout_prob', ax=axes[1], palette='viridis')
+        # --- Plot per la Loss (solo linee smussate) ---
+        sns.lineplot(
+            data=df_loss, 
+            x='epoch', y='Loss', 
+            hue='dropout_prob', style='Set', 
+            markers=markers, palette=palette, ax=axes[1], linewidth=2.5
+        )
         axes[1].set_title('Loss vs. Epoche')
         axes[1].set_xlabel('Epoca')
         axes[1].set_ylabel('Loss')
-        axes[1].grid(True)
-        handles, _ = axes[1].get_legend_handles_labels()
-        axes[1].legend(handles, [f'Test (dropout={p})' for p in [0.0, dropout_to_compare]] + [f'Train (dropout={p})' for p in [0.0, dropout_to_compare]], title='Dropout')
+        axes[1].grid(True, which='both', linestyle='--')
+        axes[1].xaxis.set_major_locator(mticker.MultipleLocator(1))
+        axes[1].legend(title='Dropout / Set')
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])
-        plt.savefig(os.path.join('plots', f'learning_curves_{model_name.replace(" ", "_")}.png'))
+        # Ho modificato il nome del file per non sovrascrivere quello precedente
+        plt.savefig(os.path.join('plots', f'learning_curves_smooth_only_{model_name.replace(" ", "_")}.png'))
         plt.close()
-
+        
 def plot_dropout_performance(df):
     """
     Genera e salva un grafico che mostra l'accuratezza finale sul test set

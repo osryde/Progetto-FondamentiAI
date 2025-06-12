@@ -34,3 +34,5 @@ Idee per slides:
 - Considerazioni finali: Parlare dei risultati e come altre tipologie di dati gioverebbero ulteriormente del dropout (o forse no)
 
 In totale devono venire fuori circa 10/15 minuti di presentazione.
+
+**Attenzione**: Nei grafici, per averli più smooth, è stata usata la media mobile (Moving average).
