@@ -19,3 +19,18 @@ Quindi durante la fase di dropout avremo un incremento del valore dei neuroni at
 ## Osservazioni
 ---
 - Il dataset utilizzato (**MNIST**) è già presente in <code>torchvision.datasets</code>
+
+## Slides
+---
+
+Idee per slides:
+- Titolo
+- Background: Cos'è un MLP tradizionale e come viene addestrato (2 slide)
+- Teorema 1 strato nascosto e perchè nonostante ciò vengono utilizzate reti con più strati nascosti
+- Cos'è il Dropout e perchè è utile (2/3 slide)
+- Una slide dove mostro l'invocazione dell'MLP flessibile con i parametri ad esso legati (1 slide + 1 slide di esempio)
+- Il dataset utilizzato per addestramento e test della rete (1 slide + 1 slide con immagini d'esempio + 1 slide su come questo tipo di dato viene gestito)
+- Risultati (n-slide dove vengono mostrati i risultati di benchmark su MNIST)
+- Considerazioni finali: Parlare dei risultati e come altre tipologie di dati gioverebbero ulteriormente del dropout (o forse no)
+
+In totale devono venire fuori circa 10/15 minuti di presentazione.
